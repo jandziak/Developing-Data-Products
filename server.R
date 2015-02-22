@@ -1,5 +1,11 @@
+library(ggplot2)
+library(lattice)
 library(caret)
 library(ggplot2)
+library(randomForest)
+library(MASS)
+library(e1071)
+library(rpart)
 data(GermanCredit)
 GermanCredit <- GermanCredit[1:300,1:12]
 inTrain <- createDataPartition(GermanCredit$Class, p = 0.7, list = F)
@@ -9,7 +15,6 @@ set.seed(41242)
 seeds <- vector(mode = "list", length = 41)
 for(i in 1:40) seeds[[i]]<- sample.int(1000, 3)
 seeds[[41]]<-sample.int(1000, 1)#for the last model
-str(seeds)
 fitControl <- trainControl(## 10-fold CV
    method = "repeatedcv",
    number = 10,
@@ -17,9 +22,8 @@ fitControl <- trainControl(## 10-fold CV
    repeats = 4,
    seeds=seeds)
 
-prostate$train <- as.factor(prostate$train)
 fit_glm <- train(Class ~ ., method='glm', data = GermanCredit, trControl = fitControl)
-fit_rf <- train(Class ~ ., method='rf', data = GermanCredit, trControl = trainControl(method = "none"), ntree = 50, tuneGrid = data.frame(.mtry = 3))
+fit_rf <- train(Class ~., data = GermanCredit, method = "rf", trControl = trainControl(method = "none"), ntree = 50, tuneGrid = data.frame(.mtry = 4))
 fit_lda <- train(Class ~ ., method='lda', data = GermanCredit, trControl = fitControl)
 
 pr_glm <- predict(fit_glm, newdata = GermanCreditTest, type = "prob")
